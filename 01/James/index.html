@@ -5,6 +5,8 @@
 
         <input type="file" name="inputfile" id="inputfile">
         <br>
+        <button type="button" onclick="myButtFunction()">Calculate!</button>
+        <br>
     
         <pre id="output"></pre>
     
@@ -23,7 +25,11 @@
                     fr.readAsText(this.files[0]);
                 })
 
-            //document.getElementById('output').textContent
+
+
+            myButtFunction = function () {
+                document.getElementById('output').textContent = myShit;
+            }
         </script>
 
     </body>
