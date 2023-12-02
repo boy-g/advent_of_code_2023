@@ -24,12 +24,29 @@
     
                     fr.readAsText(this.files[0]);
                 })
-
-
             
             myButtFunction = function () {
                 var mySplitShit = myShit.split('\n');
-                document.getElementById('output').textContent = mySplitShit;
+                var myProcessedSplitShit = [];
+                for (let line in mySplitShit) {
+                    myProcessedSplitShit[line] = "";
+                    for (let char in mySplitShit[line]) {
+                        if (mySplitShit[line][char] >= 0 && mySplitShit[line][char] <= 9) {
+                            myProcessedSplitShit[line] += (mySplitShit[line][char]);
+                        }
+                    }
+                    myProcessedSplitShit[line] = myProcessedSplitShit[line].trim();
+                }
+                var mySlicedProcessedSplitShit = [];
+                for (let number in myProcessedSplitShit) {
+                    mySlicedProcessedSplitShit.push(myProcessedSplitShit[number][0] + myProcessedSplitShit[number].slice(-1));
+                }
+                var myFinalShit = 0;
+                for (let line in myProcessedSplitShit) {
+                    myFinalShit += parseInt(mySlicedProcessedSplitShit[line]);
+                }
+
+                document.getElementById('output').textContent = myFinalShit;
             }
         </script>
 
