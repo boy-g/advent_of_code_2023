@@ -1,4 +1,4 @@
 run:
-	ghc -Wall Trebuchet.hs
-	cat example | ./Trebuchet
-	cat input | ./Trebuchet
+	ghc -Wall Trebuchet2.hs
+	cat example2 | ./Trebuchet2
+	#cat input | ./Trebuchet2
