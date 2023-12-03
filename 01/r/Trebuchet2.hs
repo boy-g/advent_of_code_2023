@@ -2,6 +2,7 @@ module Main (main) where
 
 import Data.Char (isDigit)
 import Data.List (isPrefixOf)
+import Debug.Trace (trace)
 
 main :: IO ()
 main = do
@@ -35,15 +36,15 @@ consumeDigits (outputLine, []) =
   (outputLine, [])  -- TODO
 consumeDigits (outputLine, inputLine)
   | isDigit nextChar             = consumeDigits (outputLine ++ [nextChar], tail inputLine)
-  | isPrefixOf "one"   inputLine = consumeDigits (outputLine ++ "1", drop 3 inputLine)
-  | isPrefixOf "two"   inputLine = consumeDigits (outputLine ++ "2", drop 3 inputLine)
-  | isPrefixOf "three" inputLine = consumeDigits (outputLine ++ "3", drop 5 inputLine)
-  | isPrefixOf "four"  inputLine = consumeDigits (outputLine ++ "4", drop 4 inputLine)
-  | isPrefixOf "five"  inputLine = consumeDigits (outputLine ++ "5", drop 4 inputLine)
-  | isPrefixOf "six"   inputLine = consumeDigits (outputLine ++ "6", drop 3 inputLine)
-  | isPrefixOf "seven" inputLine = consumeDigits (outputLine ++ "7", drop 5 inputLine)
-  | isPrefixOf "eight" inputLine = consumeDigits (outputLine ++ "8", drop 5 inputLine)
-  | isPrefixOf "nine"  inputLine = consumeDigits (outputLine ++ "9", drop 4 inputLine)
+  | isPrefixOf "one"   inputLine = consumeDigits (outputLine ++ "1", tail inputLine)
+  | isPrefixOf "two"   inputLine = consumeDigits (outputLine ++ "2", tail inputLine)
+  | isPrefixOf "three" inputLine = consumeDigits (outputLine ++ "3", tail inputLine)
+  | isPrefixOf "four"  inputLine = consumeDigits (outputLine ++ "4", tail inputLine)
+  | isPrefixOf "five"  inputLine = consumeDigits (outputLine ++ "5", tail inputLine)
+  | isPrefixOf "six"   inputLine = consumeDigits (outputLine ++ "6", tail inputLine)
+  | isPrefixOf "seven" inputLine = consumeDigits (outputLine ++ "7", tail inputLine)
+  | isPrefixOf "eight" inputLine = consumeDigits (outputLine ++ "8", tail inputLine)
+  | isPrefixOf "nine"  inputLine = consumeDigits (outputLine ++ "9", tail inputLine)
   | otherwise                    = consumeDigits (outputLine, tail inputLine)
   where
     nextChar = head inputLine
