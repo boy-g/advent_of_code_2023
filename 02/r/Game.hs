@@ -1,5 +1,8 @@
 module Main (main) where
 
+import Debug.Trace (trace)
+--import Text.Regex (subRegex)
+
 data Hand = Hand {
   red   :: Integer,
   green :: Integer,
@@ -20,4 +23,10 @@ main = do
   print $ parseInput puzzleInput
 
 parseInput :: String -> [Game]
-parseInput _ = [Game 0 []]
+parseInput input =
+  map parseLine inputLines
+  where
+    inputLines = lines input
+
+parseLine :: String -> Game
+parseLine line = trace line $ Game 0 []
