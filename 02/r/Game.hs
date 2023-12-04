@@ -1,7 +1,7 @@
 module Main (main) where
 
+import Data.List (stripPrefix)
 import Debug.Trace (trace)
---import Text.Regex (subRegex)
 
 data Hand = Hand {
   red   :: Integer,
@@ -18,9 +18,10 @@ readStdin :: IO String
 readStdin = getContents
 
 main :: IO ()
-main = do
-  puzzleInput <- readStdin
-  print $ parseInput puzzleInput
+main =
+  do
+    puzzleInput <- readStdin
+    print $ parseInput puzzleInput
 
 parseInput :: String -> [Game]
 parseInput input =
@@ -29,4 +30,17 @@ parseInput input =
     inputLines = lines input
 
 parseLine :: String -> Game
-parseLine line = trace line $ Game 0 []
+parseLine line =
+  trace line Game gameId []
+  where
+    gameId = extractGameId line
+
+extractGameId :: String -> Integer
+extractGameId line =
+  case (stripPrefix "Game " line) of
+    Just lineRemaining ->
+      gameId
+    Nothing ->
+      error $ "trying to get game id of corruct line: " ++ line
+  where
+    gameId = 1234
