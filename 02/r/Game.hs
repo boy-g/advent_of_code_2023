@@ -2,6 +2,7 @@ module Main (main) where
 
 import Data.List (stripPrefix)
 import Debug.Trace (trace)
+import Text.Regex (mkRegex, subRegex)
 
 data Hand = Hand {
   red   :: Integer,
