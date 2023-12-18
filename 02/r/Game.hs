@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Data.List.Split (splitOn)
 import Debug.Trace (trace)
 import Text.Regex (mkRegex, subRegex)
 
@@ -10,7 +11,7 @@ data Hand = Hand {
 } deriving (Show)
 
 data Game = Game {
-  id    :: Integer,
+  id    :: Integer,  -- TODO rename "gameId"?
   hands :: [Hand]
 } deriving (Show)
 
@@ -31,14 +32,31 @@ parseInput input =
 
 parseLine :: String -> Game
 parseLine line =
-  trace line Game gameId []
+  trace line Game gameId gameHands
   where
-    gameId = extractGameId line
+    gameId    = parseGameId line
+    gameHands = parseGameHands line
 
-extractGameId :: String -> Integer
-extractGameId line =
+parseGameId :: String -> Integer
+parseGameId line =
   gameId
   where
     lineWoHead       = subRegex (mkRegex "Game ") line ""
     lineWoHeadWoTail = subRegex (mkRegex ":.*") lineWoHead ""
     gameId           = read lineWoHeadWoTail
+
+parseGameHands :: String -> [Hand]
+parseGameHands line =
+  trace (show hands) []
+  where
+    handsLine = subRegex (mkRegex ".*:") line ""
+    handLines = splitOn ";" handsLine
+    hands = map parseGameHand handLines
+
+parseGameHand :: String -> Hand
+parseGameHand handLine =
+  trace handLine Hand {red = red, green = green, blue = blue}
+  where
+    red   = 0
+    green = 0
+    blue  = 0
