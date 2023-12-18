@@ -1,6 +1,5 @@
 module Main (main) where
 
-import Data.List (stripPrefix)
 import Debug.Trace (trace)
 import Text.Regex (mkRegex, subRegex)
 
@@ -38,10 +37,8 @@ parseLine line =
 
 extractGameId :: String -> Integer
 extractGameId line =
-  case (stripPrefix "Game " line) of
-    Just lineRemaining ->
-      gameId
-    Nothing ->
-      error $ "trying to get game id of corruct line: " ++ line
+  gameId
   where
-    gameId = 1234
+    lineWoHead       = subRegex (mkRegex "Game ") line ""
+    lineWoHeadWoTail = subRegex (mkRegex ":.*") lineWoHead ""
+    gameId           = read lineWoHeadWoTail
