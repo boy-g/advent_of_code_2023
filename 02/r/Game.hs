@@ -1,5 +1,7 @@
 module Main (main) where
 
+import Prelude hiding (id)
+
 import Data.List (isInfixOf)
 import Data.List.Split (splitOn)
 import Data.Maybe (listToMaybe)
@@ -23,11 +25,14 @@ readStdin = getContents
 safeHead :: [a] -> Maybe a
 safeHead = listToMaybe
 
+maxHand :: Hand
+maxHand = Hand {red = 12, green = 13, blue = 14}
+
 main :: IO ()
 main =
   do
     puzzleInput <- readStdin
-    print $ parseInput puzzleInput
+    print $ sum $ getGameIds $ filterPossibleGames $ parseInput puzzleInput
 
 parseInput :: String -> [Game]
 parseInput input =
@@ -77,3 +82,30 @@ parseColorLine (Just line) =
   where
     lineWoHead       = subRegex (mkRegex "^ *") line ""
     lineWoHeadWoTail = subRegex (mkRegex " .*") lineWoHead ""
+
+filterPossibleGames :: [Game] -> [Game]
+filterPossibleGames games = filter isGamePossible games
+
+isGamePossible :: Game -> Bool
+isGamePossible game =
+  trace (show game ++ " possible? " ++ show possible) possible
+  where
+    handsPossibilities = map isHandPossible $ hands game
+    possible           = foldr (&&) True handsPossibilities
+
+isHandPossible :: Hand -> Bool
+isHandPossible hand =
+  trace (show hand ++ " hand? " ++ show possible) possible
+  where
+    possible =
+      (red   hand <= red   maxHand)  &&
+      (green hand <= green maxHand)  &&
+      (blue  hand <= blue  maxHand)
+
+getGameIds :: [Game] -> [Integer]
+getGameIds games =
+  map getGameId games
+
+getGameId :: Game -> Integer
+getGameId (Game {id = id}) =
+  id
