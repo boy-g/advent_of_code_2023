@@ -1,6 +1,8 @@
 module Main (main) where
 
+import Data.List (isInfixOf)
 import Data.List.Split (splitOn)
+import Data.Maybe (listToMaybe)
 import Debug.Trace (trace)
 import Text.Regex (mkRegex, subRegex)
 
@@ -18,6 +20,9 @@ data Game = Game {
 readStdin :: IO String
 readStdin = getContents
 
+safeHead :: [a] -> Maybe a
+safeHead = listToMaybe
+
 main :: IO ()
 main =
   do
@@ -32,7 +37,7 @@ parseInput input =
 
 parseLine :: String -> Game
 parseLine line =
-  trace line Game gameId gameHands
+  Game gameId gameHands
   where
     gameId    = parseGameId line
     gameHands = parseGameHands line
@@ -47,7 +52,7 @@ parseGameId line =
 
 parseGameHands :: String -> [Hand]
 parseGameHands line =
-  trace (show hands) []
+  hands
   where
     handsLine = subRegex (mkRegex ".*:") line ""
     handLines = splitOn ";" handsLine
@@ -55,8 +60,20 @@ parseGameHands line =
 
 parseGameHand :: String -> Hand
 parseGameHand handLine =
-  trace handLine Hand {red = red, green = green, blue = blue}
+  Hand {red = red, green = green, blue = blue}
   where
-    red   = 0
-    green = 0
-    blue  = 0
+    redLine   = safeHead $ filter (isInfixOf "red") colorLines
+    red       = parseColorLine redLine
+    greenLine = safeHead $ filter (isInfixOf "green") colorLines
+    green     = parseColorLine greenLine
+    blueLine  = safeHead $ filter (isInfixOf "blue") colorLines
+    blue      = parseColorLine blueLine
+    colorLines = splitOn "," handLine
+
+parseColorLine :: Maybe String -> Integer
+parseColorLine Nothing = 0
+parseColorLine (Just line) =
+  read lineWoHeadWoTail
+  where
+    lineWoHead       = subRegex (mkRegex "^ *") line ""
+    lineWoHeadWoTail = subRegex (mkRegex " .*") lineWoHead ""
