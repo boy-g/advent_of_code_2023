@@ -2,10 +2,13 @@ module Main (main) where
 
 import Prelude hiding (id)
 
+import Data.Char (isSpace, isNumber)
 import Data.List (isInfixOf)
 import Data.List.Split (splitOn)
+import Data.Text.Lazy (unpack)
 import Data.Maybe (listToMaybe)
 import Debug.Trace (trace)
+import Text.Pretty.Simple (pShow, pShowNoColor, pPrint)
 import Text.Regex (mkRegex, subRegex)
 
 data Hand = Hand {
@@ -33,6 +36,8 @@ main =
   do
     puzzleInput <- readStdin
     print $ sum $ getGameIds $ filterPossibleGames $ parseInput puzzleInput
+    --print $ tagGamePossibilities $ parseInput puzzleInput
+    --pPrint $ tagGamePossibilities $ parseInput puzzleInput
 
 parseInput :: String -> [Game]
 parseInput input =
@@ -78,24 +83,26 @@ parseGameHand handLine =
 parseColorLine :: Maybe String -> Integer
 parseColorLine Nothing = 0
 parseColorLine (Just line) =
-  read lineWoHeadWoTail
+  read lineWoSpaceWoLetters
   where
-    lineWoHead       = subRegex (mkRegex "^ *") line ""
-    lineWoHeadWoTail = subRegex (mkRegex " .*") lineWoHead ""
+    lineWoSpace          = filter (not . isSpace) line
+    lineWoSpaceWoLetters = filter isNumber lineWoSpace
 
 filterPossibleGames :: [Game] -> [Game]
 filterPossibleGames games = filter isGamePossible games
 
 isGamePossible :: Game -> Bool
 isGamePossible game =
-  trace (show game ++ " possible? " ++ show possible) possible
+  --trace (show game ++ " possible? " ++ show possible) possible
+  possible
   where
     handsPossibilities = map isHandPossible $ hands game
     possible           = foldr (&&) True handsPossibilities
 
 isHandPossible :: Hand -> Bool
 isHandPossible hand =
-  trace (show hand ++ " hand? " ++ show possible) possible
+  --trace (show hand ++ " hand? " ++ show possible) possible  -- TODO
+  possible
   where
     possible =
       (red   hand <= red   maxHand)  &&
@@ -109,3 +116,11 @@ getGameIds games =
 getGameId :: Game -> Integer
 getGameId (Game {id = id}) =
   id
+
+tagGamePossibilities :: [Game] -> [(Bool, Game)]
+tagGamePossibilities games =
+  map tagGamePossibility games
+
+tagGamePossibility :: Game -> (Bool, Game)
+tagGamePossibility game =
+  (isGamePossible game, game)
