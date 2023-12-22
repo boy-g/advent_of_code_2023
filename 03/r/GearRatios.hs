@@ -11,15 +11,69 @@ readStdin = getContents
 data Coord = Coord {
   x :: Int,
   y :: Int
-} deriving (Show)
+} deriving (Show, Eq)
+
+data NumCoorded = NumCoorded {
+  numstr :: [Char],
+  coords :: [Coord]
+} deriving (Show, Eq)
+
+emptyNumCoorded :: NumCoorded
+emptyNumCoorded = NumCoorded {numstr="", coords=[]}
 
 main :: IO ()
 main = do
   puzzleInput <- readStdin
-  print $ locateAdjacents $ keepOnlyNumberCoordinates $ listifyAllCoordinates $ parsePuzzleInput puzzleInput
+  let themap = parsePuzzleInput puzzleInput
+  --print $ locateDirectAdjacents $ removeNonNumberCoords $ listifyAllCoords themap
+  print $ parseAllNumbersInMap themap
 
-keepOnlyNumberCoordinates :: ([[Char]], [Coord]) -> ([[Char]], [Coord])
-keepOnlyNumberCoordinates (themap, coordsOld) =
+parseAllNumbersInMap :: [[Char]] -> [NumCoorded]
+parseAllNumbersInMap themap =
+  removeEmptyNumbers allNumbersPlusEmpties
+  where
+    allNumbersOnLines = map (parseAllNumbersOnLine themap) ys
+    ys = [0..(length themap - 1)]
+    allNumbersPlusEmpties = concat allNumbersOnLines
+
+removeEmptyNumbers :: [NumCoorded] -> [NumCoorded]
+removeEmptyNumbers ns =
+  filter isNonEmptyNumber ns
+
+isNonEmptyNumber :: NumCoorded -> Bool
+isNonEmptyNumber (NumCoorded {numstr=numstr}) =
+  0 < length numstr
+
+parseAllNumbersOnLine :: [[Char]] -> Int -> [NumCoorded]
+parseAllNumbersOnLine themap y =
+  foldr (parseNumberOnCoord themap y) [emptyNumCoorded] xs
+  where
+    theline = themap !! y
+    xs      = [0..(length theline - 1)]
+
+parseNumberOnCoord :: [[Char]] -> Int -> Int -> [NumCoorded] -> [NumCoorded]
+parseNumberOnCoord themap y x (n : numCoordedOld)
+  | startNew         = emptyNumCoorded : n : numCoordedOld
+  | continueExisting = prepended : numCoordedOld
+  | otherwise        = n : numCoordedOld
+  where
+    startNew         = headNonEmpty && (not $ isNumber theChar)
+    headNonEmpty     = n /= emptyNumCoorded
+    theChar          = (themap !! y) !! x
+    continueExisting = isNumber theChar
+    prepended        = prependToNumCoorded n x y theChar
+
+prependToNumCoorded :: NumCoorded -> Int -> Int -> Char -> NumCoorded
+prependToNumCoorded old x y c =
+  new
+  where
+    new       = NumCoorded {numstr=numstrNew, coords=coordsNew}
+    numstrNew = c : numstrOld
+    NumCoorded {numstr=numstrOld, coords=coordsOld} = old
+    coordsNew = Coord {x=x, y=y} : coordsOld
+
+removeNonNumberCoords :: ([[Char]], [Coord]) -> ([[Char]], [Coord])
+removeNonNumberCoords (themap, coordsOld) =
   (themap, coordsNumbers)
   where
     coordsNumbers = filter (isNumCoord themap) coordsOld
@@ -30,8 +84,8 @@ isNumCoord themap (Coord {x, y}) =
   where
     mapDataAtCoord = (themap !! y) !! x
 
-listifyAllCoordinates :: [[Char]] -> ([[Char]], [Coord])
-listifyAllCoordinates themap =
+listifyAllCoords :: [[Char]] -> ([[Char]], [Coord])
+listifyAllCoords themap =
   (themap, coordsAll)
   where
     height = length themap
@@ -45,8 +99,8 @@ parsePuzzleInput :: String -> [[Char]]
 parsePuzzleInput puzzleInput =
   lines puzzleInput
 
-locateAdjacents :: ([[Char]], [Coord]) -> ([[Char]], [Coord])
-locateAdjacents (themap, coordsAll) =
+locateDirectAdjacents :: ([[Char]], [Coord]) -> ([[Char]], [Coord])
+locateDirectAdjacents (themap, coordsAll) =
   (themap, coordsHasAdjacent)
   where
     coordsHasAdjacent = filter (hasAdjacentOnMap themap) coordsAll
