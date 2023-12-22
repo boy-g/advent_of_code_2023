@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Data.Char (isNumber)
+import Data.List (intersect)
 import Debug.Trace (trace)
 
 readStdin :: IO String
@@ -25,8 +26,31 @@ main :: IO ()
 main = do
   puzzleInput <- readStdin
   let themap = parsePuzzleInput puzzleInput
-  --print $ locateDirectAdjacents $ removeNonNumberCoords $ listifyAllCoords themap
-  print $ parseAllNumbersInMap themap
+  print $ solveTask themap
+
+solveTask :: [[Char]] -> Int
+solveTask themap =
+  sum numsWAdjacentsInt
+  where
+    coordsWAdjacent =
+      locateDirectAdjacents $
+      removeNonNumberCoords $
+      listifyAllCoords themap
+    numsInMap = parseAllNumbersInMap themap
+    numsWAdjacents = filter (hasNumAdjacent coordsWAdjacent) numsInMap
+    numsWAdjacentsString = map numCoorded2numstr numsWAdjacents
+    numsWAdjacentsInt = map read numsWAdjacentsString :: [Int]
+
+numCoorded2numstr :: NumCoorded -> [Char]
+numCoorded2numstr (NumCoorded {numstr=numstr}) =
+  numstr
+
+hasNumAdjacent :: [Coord] -> NumCoorded -> Bool
+hasNumAdjacent coordsWAdjacent num =
+  0 < length numsCoordsWAdjacents
+  where
+    NumCoorded {coords=numsCoords} = num
+    numsCoordsWAdjacents = intersect numsCoords coordsWAdjacent
 
 parseAllNumbersInMap :: [[Char]] -> [NumCoorded]
 parseAllNumbersInMap themap =
@@ -99,11 +123,11 @@ parsePuzzleInput :: String -> [[Char]]
 parsePuzzleInput puzzleInput =
   lines puzzleInput
 
-locateDirectAdjacents :: ([[Char]], [Coord]) -> ([[Char]], [Coord])
+locateDirectAdjacents :: ([[Char]], [Coord]) -> [Coord]
 locateDirectAdjacents (themap, coordsAll) =
-  (themap, coordsHasAdjacent)
+  coordsHavingAdjacent
   where
-    coordsHasAdjacent = filter (hasAdjacentOnMap themap) coordsAll
+    coordsHavingAdjacent = filter (hasAdjacentOnMap themap) coordsAll
 
 hasAdjacentOnMap :: [[Char]] -> Coord -> Bool
 hasAdjacentOnMap themap coord =
