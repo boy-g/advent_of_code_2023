@@ -1,5 +1,7 @@
 module Main (main) where
 
+import Data.Bits (shiftL)
+import Data.List (intersect)
 import Data.List.Split (splitOn)
 import Debug.Trace (trace)
 
@@ -15,17 +17,34 @@ readStdin =
 main :: IO ()
 main = do
   puzzleInput <- readStdin
-  print $ parsePuzzleInput puzzleInput
+  print $ solvePuzzle $ parsePuzzleInput puzzleInput
+
+solvePuzzle :: [Card] -> Int
+solvePuzzle cards =
+  trace (show pointss) $ sum pointss
+  where
+    winningNumberss = map findWinningNumbers cards
+    pointss         = map calcPoints winningNumberss
+
+calcPoints :: [Int] -> Int
+calcPoints [] =
+  0
+calcPoints winningNumbers =
+  shiftL 1 (length winningNumbers - 1)
+
+findWinningNumbers :: Card -> [Int]
+findWinningNumbers (Card {cardWins=wins, cardHaves=haves}) =
+  intersect wins haves
 
 parsePuzzleInput :: String -> [Card]
 parsePuzzleInput puzzleInput =
-  [parseLineCard $ puzzleLines !! 0]  --TODO all
+  map parseLineCard puzzleLines
   where
     puzzleLines = lines puzzleInput
 
 parseLineCard :: String -> Card
 parseLineCard line =
-  trace (show (wins, haves)) Card {cardWins=wins, cardHaves=haves}
+  Card {cardWins=wins, cardHaves=haves}
   where
     lineWoPrefix   = last $ splitOn ":" line
     linesWinsHaves = splitOn "|" lineWoPrefix
