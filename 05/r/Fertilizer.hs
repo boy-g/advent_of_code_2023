@@ -31,7 +31,49 @@ data Conversion =
 main :: IO ()
 main = do
   puzzleInput <- getContents
-  print $ parsePuzzleInput puzzleInput
+  print $ findLowestLocation $ parsePuzzleInput puzzleInput
+
+findLowestLocation :: Almanac -> Int
+findLowestLocation almanac =
+  lowestLocation
+  where
+    lowestLocation = findLocation maps (head seeds)  --TODO all
+    Almanac {almanacSeeds=seeds, almanacMaps=maps} = almanac
+
+findLocation :: [Map] -> Int -> Int
+findLocation maps seed =
+  location
+  where
+    Map conversions = head maps
+    location = convertRecurse conversions seed
+
+convertRecurse :: [Conversion] -> Int -> Int
+convertRecurse [] numCurrent =
+  numCurrent
+convertRecurse (conversion:cs) numCurrent
+  | isInConversion conversion numCurrent =
+    convertRecurse cs converted
+  | otherwise =
+    convertRecurse cs numCurrent
+  where
+    converted = convertOne conversion numCurrent
+
+convertOne :: Conversion -> Int -> Int
+convertOne conversion num =
+  trace "convertOne: " converted
+  where
+    converted = num + offset
+    offset    = destination - source
+    Conversion destination source _ = conversion
+
+isInConversion :: Conversion -> Int -> Bool
+isInConversion conversion num =
+  trace ("isInConversion: " ++ show rangeSource) isIn
+  where
+    isIn = (low <= num) && (num <= high)
+    low  = rangeSource
+    high = rangeSource + rangeLength - 1
+    Conversion _ rangeSource rangeLength = conversion
 
 parsePuzzleInput :: String -> Almanac
 parsePuzzleInput puzzleInput =
