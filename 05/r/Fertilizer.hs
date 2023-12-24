@@ -16,6 +16,7 @@ data Map =
   Map [Conversion]
   deriving (Show)
 
+mapEmpty :: Map
 mapEmpty =
   Map []
 
@@ -35,17 +36,22 @@ main = do
 
 findLowestLocation :: Almanac -> Int
 findLowestLocation almanac =
-  lowestLocation
+  trace ("findLowestLocation: " ++ show locations) lowestLocation
   where
-    lowestLocation = findLocation maps (head seeds)  --TODO all
+    --TODO locations      = map (findLocation maps) seeds
+    locations      = map (findLocation maps) [seeds !! 1]
+    lowestLocation = head locations  --TODO minimum
     Almanac {almanacSeeds=seeds, almanacMaps=maps} = almanac
 
 findLocation :: [Map] -> Int -> Int
 findLocation maps seed =
   location
   where
-    Map conversions = head maps
-    location = convertRecurse conversions seed
+    location = foldl convertMap seed maps
+
+convertMap :: Int -> Map -> Int
+convertMap numCurrent (Map conversions) =
+  convertRecurse conversions numCurrent
 
 convertRecurse :: [Conversion] -> Int -> Int
 convertRecurse [] numCurrent =
@@ -56,11 +62,11 @@ convertRecurse (conversion:cs) numCurrent
   | otherwise =
     convertRecurse cs numCurrent
   where
-    converted = convertOne conversion numCurrent
+    converted = convertOnce conversion numCurrent
 
-convertOne :: Conversion -> Int -> Int
-convertOne conversion num =
-  trace "convertOne: " converted
+convertOnce :: Conversion -> Int -> Int
+convertOnce conversion num =
+  trace ("convertOnce: " ++ show num ++ " " ++ show converted) converted
   where
     converted = num + offset
     offset    = destination - source
@@ -68,7 +74,7 @@ convertOne conversion num =
 
 isInConversion :: Conversion -> Int -> Bool
 isInConversion conversion num =
-  trace ("isInConversion: " ++ show rangeSource) isIn
+  trace ("isIn: " ++ show num ++ " " ++ show conversion ++ " " ++ show isIn) isIn
   where
     isIn = (low <= num) && (num <= high)
     low  = rangeSource
