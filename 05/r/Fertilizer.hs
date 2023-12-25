@@ -7,7 +7,7 @@ import Debug.Trace (trace)
 
 data Almanac =
   Almanac {
-    almanacSeeds :: [Int],
+    almanacSeeds :: [Integer],
     almanacMaps  :: [Map]
   }
   deriving (Show)
@@ -22,9 +22,9 @@ mapEmpty =
 
 data Conversion =
   Conversion {
-    conversionDestination :: Int,
-    conversionSource      :: Int,
-    conversionLength      :: Int
+    conversionDestination :: Integer,
+    conversionSource      :: Integer,
+    conversionLength      :: Integer
   }
   deriving (Show)
 
@@ -34,7 +34,7 @@ main = do
   puzzleInput <- getContents
   print $ findLowestLocation $ parsePuzzleInput puzzleInput
 
-findLowestLocation :: Almanac -> Int
+findLowestLocation :: Almanac -> Integer
 findLowestLocation almanac =
   trace ("findLowestLocation: " ++ show locations) lowestLocation
   where
@@ -42,17 +42,17 @@ findLowestLocation almanac =
     lowestLocation = minimum locations
     Almanac {almanacSeeds=seeds, almanacMaps=maps} = almanac
 
-findLocation :: [Map] -> Int -> Int
+findLocation :: [Map] -> Integer -> Integer
 findLocation maps seed =
   location
   where
     location = foldl convertViaMap seed maps
 
-convertViaMap :: Int -> Map -> Int
+convertViaMap :: Integer -> Map -> Integer
 convertViaMap numCurrent (Map conversions) =
   convertRecurse conversions numCurrent
 
-convertRecurse :: [Conversion] -> Int -> Int
+convertRecurse :: [Conversion] -> Integer -> Integer
 convertRecurse [] numCurrent =
   numCurrent
 convertRecurse (conversion:cs) numCurrent
@@ -63,7 +63,7 @@ convertRecurse (conversion:cs) numCurrent
   where
     converted = convertOnce conversion numCurrent
 
-convertOnce :: Conversion -> Int -> Int
+convertOnce :: Conversion -> Integer -> Integer
 convertOnce conversion num =
   --trace ("convertOnce: " ++ show num ++ " " ++ show converted) converted
   converted
@@ -72,7 +72,7 @@ convertOnce conversion num =
     offset    = destination - source
     Conversion destination source _ = conversion
 
-isInConversion :: Conversion -> Int -> Bool
+isInConversion :: Conversion -> Integer -> Bool
 isInConversion conversion num =
   --trace ("isIn: " ++ show num ++ " " ++ show conversion ++ " " ++ show isIn) isIn
   isIn
@@ -122,7 +122,7 @@ parseConversion line =
     cSource      = read $ words line !! 1
     cLength      = read $ words line !! 2
 
-parseSeeds :: String -> [Int]
+parseSeeds :: String -> [Integer]
 parseSeeds puzzleInput =
   seeds
   where
