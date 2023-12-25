@@ -39,7 +39,7 @@ findLowestLocation almanac =
   trace ("findLowestLocation: " ++ show locations) lowestLocation
   where
     locations      = map (findLocation maps) seeds
-    lowestLocation = head locations  --TODO minimum
+    lowestLocation = minimum locations
     Almanac {almanacSeeds=seeds, almanacMaps=maps} = almanac
 
 findLocation :: [Map] -> Int -> Int
