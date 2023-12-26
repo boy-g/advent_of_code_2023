@@ -1,6 +1,9 @@
 module Main (main) where
 
 
+import Debug.Trace (trace)
+
+
 data Paper =
   Paper [Record]
   deriving (Show)
@@ -16,7 +19,49 @@ data Record =
 main :: IO ()
 main = do
   puzzleInput <- getContents
-  print $ parsePuzzleInput puzzleInput
+  print $ solvePuzzle $ parsePuzzleInput puzzleInput
+
+solvePuzzle :: Paper -> Integer
+solvePuzzle (Paper records) =
+  product numWinss
+  where
+    numWinss = map findNumWins records
+
+findNumWins :: Record -> Integer
+findNumWins record =
+  numWins
+  where
+    distances = permutateDistances record
+    numWins   = countWins record distances
+
+countWins :: Record -> [Integer] -> Integer  -- TODO only take "distanceRecord"
+countWins record distancesAll =
+  numWins
+  where
+    numWins       = toInteger $ length distancesWins
+    distancesWins = filter (isWinner record) distancesAll
+
+isWinner :: Record -> Integer -> Bool
+isWinner record distanceCandidate =
+  distanceBest < distanceCandidate
+  where
+    Record {distance=distanceBest} = record
+
+permutateDistances :: Record -> [Integer]  -- TODO only take "timeMax"
+permutateDistances record =
+  distances
+  where
+    Record {time=timeMax} = record
+    holdTimes             = [0..timeMax]
+    distances             = map (calcDistance timeMax) holdTimes
+
+calcDistance :: Integer -> Integer -> Integer
+calcDistance timeMax timeHold =
+  distance
+  where
+    distance  = timeDrive * speed
+    timeDrive = timeMax - timeHold
+    speed     = timeHold
 
 parsePuzzleInput :: String -> Paper
 parsePuzzleInput puzzleInput =
