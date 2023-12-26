@@ -74,14 +74,13 @@ solvePuzzle gameUnordered =
   totalWinnings
   where
     Game { gameLines=linesUnordered } = gameUnordered
-    gameOrdered   = Game { gameLines=linesOrdered }
     linesOrdered  = sort linesUnordered
     linesRanked   = rankLines linesOrdered
     totalWinnings = calcTotalWinnings linesRanked
 
 calcTotalWinnings :: [Line] -> Integer
-calcTotalWinnings lines =
-  sum $ map calcWinning lines
+calcTotalWinnings theLines =
+  sum $ map calcWinning theLines
 
 calcWinning :: Line -> Integer
 calcWinning line =
@@ -138,6 +137,7 @@ castCharToLabel c
   | c == 'Q' = Q
   | c == 'K' = K
   | c == 'A' = A
+  | otherwise = error "castCharToLabel: unknown label"
 
 lineCompare :: Line -> Line -> Ordering
 lineCompare lineX lineY
