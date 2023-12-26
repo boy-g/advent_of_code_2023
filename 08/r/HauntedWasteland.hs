@@ -1,9 +1,9 @@
 module Main (main) where
 
-data PouchDuMaps =
-  PouchDuMaps {
-    pouchDuMapsInstrs :: [Instr],
-    pouchDuMapsNodes  :: [Node]
+data PouchDeMaps =
+  PouchDeMaps {
+    pouchDeMapsInstrs :: [Instr],
+    pouchDeMapsNodes  :: [Node]
   }
   deriving (Show)
 
@@ -23,12 +23,12 @@ data Node =
 main :: IO ()
 main = do
   puzzleInput <- getContents
-  print $ parsePuzzleInput puzzleInput
+  print $ solvePuzzle $ parsePuzzleInput puzzleInput
 
-parsePuzzleInput :: String -> PouchDuMaps
-parsePuzzleInput puzzleInput = pouchDuMaps
+parsePuzzleInput :: String -> PouchDeMaps
+parsePuzzleInput puzzleInput = pouchDeMaps
   where
-  pouchDuMaps  = PouchDuMaps instructions nodes
+  pouchDeMaps  = PouchDeMaps instructions nodes
   instructions = parseInstrs puzzleInput
   nodes        = parseNodes puzzleInput
 
@@ -46,30 +46,33 @@ parseInstr _   = error "parseInstr: wtf"
 parseNodes :: String -> [Node]
 parseNodes puzzleInput = nodes
   where
-  nodes        = map parseNode linesDuNodes
-  linesDuNodes = drop 2 $ lines puzzleInput
+  nodes        = map parseNode linesDeNodes
+  linesDeNodes = drop 2 $ lines puzzleInput
 
 parseNode :: String -> Node
-parseNode lineDuNode = node
+parseNode lineDeNode = node
   where
   node         = Node theNodeLabel theNodeLeft theNodeRight
-  theNodeLabel = parseNodeLabel lineDuNode
-  theNodeLeft  = parseNodeLeft lineDuNode
-  theNodeRight = parseNodeRight lineDuNode
+  theNodeLabel = parseNodeLabel lineDeNode
+  theNodeLeft  = parseNodeLeft lineDeNode
+  theNodeRight = parseNodeRight lineDeNode
 
 parseNodeLabel :: String -> String
-parseNodeLabel lineDuNode = theNodeLabel
+parseNodeLabel lineDeNode = theNodeLabel
   where
-  theNodeLabel = head $ words lineDuNode
+  theNodeLabel = head $ words lineDeNode
 
 parseNodeLeft :: String -> String
-parseNodeLeft lineDuNode = theNodeLeft
+parseNodeLeft lineDeNode = theNodeLeft
   where
-  theNodeLeftWithCruft = words lineDuNode !! 2
+  theNodeLeftWithCruft = words lineDeNode !! 2
   theNodeLeft          = init $ drop 1 theNodeLeftWithCruft
 
 parseNodeRight :: String -> String
-parseNodeRight lineDuNode = theNodeRight
+parseNodeRight lineDeNode = theNodeRight
   where
-  theNodeRightWithCruft = last $ words lineDuNode
+  theNodeRightWithCruft = last $ words lineDeNode
   theNodeRight          = init theNodeRightWithCruft
+
+solvePuzzle :: PouchDeMaps -> Integer
+solvePuzzle pouchDeMaps = 0  -- TODO
