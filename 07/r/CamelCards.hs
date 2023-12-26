@@ -29,9 +29,25 @@ data Rank =
 
 data Hand =
   Hand {
-    handLabels :: [Char]
+    handLabels :: [Label]
   }
   deriving (Show, Eq)
+
+data Label =
+  L2 |
+  L3 |
+  L4 |
+  L5 |
+  L6 |
+  L7 |
+  L8 |
+  L9 |
+  T  |
+  J  |
+  Q  |
+  K  |
+  A
+  deriving (Show, Eq, Ord)
 
 data Bid =
   Bid Integer
@@ -55,11 +71,38 @@ main = do
 
 solvePuzzle :: Game -> Integer
 solvePuzzle gameUnordered =
-  trace (show gameOrdered) 0  -- TODO
+  totalWinnings
   where
     Game { gameLines=linesUnordered } = gameUnordered
-    linesOrdered = sort linesUnordered
-    gameOrdered = Game { gameLines=linesOrdered }
+    gameOrdered   = Game { gameLines=linesOrdered }
+    linesOrdered  = sort linesUnordered
+    linesRanked   = rankLines linesOrdered
+    totalWinnings = calcTotalWinnings linesRanked
+
+calcTotalWinnings :: [Line] -> Integer
+calcTotalWinnings lines =
+  sum $ map calcWinning lines
+
+calcWinning :: Line -> Integer
+calcWinning line =
+  bid * rank
+  where
+    Bid bid          = lineBid line
+    Just (Rank rank) = lineRank line
+
+rankLines :: [Line] -> [Line]
+rankLines linesUnranked =
+  linesRanked
+  where
+    ranks         = [1..]
+    linesAndRanks = zip linesUnranked ranks
+    linesRanked   = map setRank linesAndRanks
+
+setRank :: (Line, Integer) -> Line
+setRank (lineIn, rank) =
+  lineOut
+  where
+    lineOut = lineIn { lineRank = Just $ Rank rank }
 
 parsePuzzleInput :: String -> Game
 parsePuzzleInput puzzleInput =
@@ -73,18 +116,40 @@ parseLine inputLine =
   gameLine
   where
     gameLine = Line { lineHand=hand, lineBid=bid, lineRank=Nothing }
-    hand     = Hand $ head $ words inputLine
+    hand     = Hand $ castCharsToLabels $ head $ words inputLine
     bid      = Bid $ read $ last $ words inputLine
+
+castCharsToLabels :: [Char] -> [Label]
+castCharsToLabels cs =
+  map castCharToLabel cs
+
+castCharToLabel :: Char -> Label
+castCharToLabel c
+  | c == '2' = L2
+  | c == '3' = L3
+  | c == '4' = L4
+  | c == '5' = L5
+  | c == '6' = L6
+  | c == '7' = L7
+  | c == '8' = L8
+  | c == '9' = L9
+  | c == 'T' = T
+  | c == 'J' = J
+  | c == 'Q' = Q
+  | c == 'K' = K
+  | c == 'A' = A
 
 lineCompare :: Line -> Line -> Ordering
 lineCompare lineX lineY
   | handTypeX == handTypeY =
-    EQ  -- TODO EQ not possible, resolve
+    compare handLabelsX handLabelsY
   | otherwise =
     compare handTypeX handTypeY
   where
-    handTypeX = getHandType $ lineHand lineX
-    handTypeY = getHandType $ lineHand lineY
+    handTypeX   = getHandType $ lineHand lineX
+    handTypeY   = getHandType $ lineHand lineY
+    handLabelsX = handLabels $ lineHand lineX
+    handLabelsY = handLabels $ lineHand lineY
 
 getHandType :: Hand -> HandType
 getHandType hand
@@ -105,7 +170,7 @@ getHandType hand
   | otherwise =
     error $ "getHandType: " ++ show hand
   where
-    lengthSet  = length $ fromList $ handLabels hand
+    lengthSet = length $ fromList $ handLabels hand
 
 hasThrees :: Hand -> Bool
 hasThrees hand =
