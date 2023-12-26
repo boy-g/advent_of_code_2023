@@ -1,14 +1,28 @@
 module Main (main) where
 
 
+import Data.List   (sort)
+import Debug.Trace (trace)
+
+
 data Game =
   Game {
-    gameHandBids :: [HandBid]
+    gameLines :: [Line]
   }
   deriving (Show)
 
-data HandBid =
-  HandBid (Hand, Bid)
+data Line =
+  Line {
+    lineHand :: Hand,
+    lineBid  :: Bid,
+    lineRank :: Maybe Rank
+  }
+  deriving (Show)
+
+--TODO instance Line Ord
+
+data Rank =
+  Rank Integer
   deriving (Show)
 
 data Hand =
@@ -25,19 +39,27 @@ data Bid =
 main :: IO ()
 main = do
   puzzleInput <- getContents
-  print $ parsePuzzleInput puzzleInput
+  print $ solvePuzzle $ parsePuzzleInput puzzleInput
+
+solvePuzzle :: Game -> Integer
+solvePuzzle gameUnordered =
+  trace (show gameOrdered) 0  -- TODO
+  where
+    Game { gameLines=lines } = gameUnordered
+    linesOrdered = lines  --TODO sort lines
+    gameOrdered = Game { gameLines=linesOrdered }
 
 parsePuzzleInput :: String -> Game
 parsePuzzleInput puzzleInput =
-  Game {gameHandBids=handBids}
+  Game {gameLines=line}
   where
-    handBids    = map parseLine puzzleLines
+    line        = map parseLine puzzleLines
     puzzleLines = lines puzzleInput
 
-parseLine :: String -> HandBid
-parseLine line =
-  handbid
+parseLine :: String -> Line
+parseLine inputLine =
+  gameLine
   where
-    handbid = HandBid (Hand hand, Bid bid)
-    hand    = head $ words line
-    bid     = read $ last $ words line
+    gameLine = Line { lineHand=hand, lineBid=bid, lineRank=Nothing }
+    hand     = Hand $ head $ words inputLine
+    bid      = Bid $ read $ last $ words inputLine
