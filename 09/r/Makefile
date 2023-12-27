@@ -1,3 +1,3 @@
 run:
 	ghc -Wall MirageMaintenance.hs
-	cat ./example | ./MirageMaintenance
+	cat ./example | ./MirageMaintenance 2>&1 | sed 's/{/{\n/g' | sed 's/\[/\[\n/g' | sed 's/,/,\n/g'
