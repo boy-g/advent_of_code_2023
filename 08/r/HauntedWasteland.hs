@@ -1,34 +1,39 @@
 module Main (main) where
 
-data PouchDeMaps =
-  PouchDeMaps {
-    pouchDeMapsInstrs :: [Instr],
-    pouchDeMapsNodes  :: [Node]
+
+import Debug.Trace (trace)
+
+
+data PouchOfMaps =
+  PouchOfMaps {
+    pouchOfMapsInstrs :: [Instr],
+    pouchOfMapsNodes  :: [Node]
   }
   deriving (Show)
 
 data Instr =
   InstrLeft |
   InstrRight
-  deriving (Show)
+  deriving (Show, Eq)
 
 data Node =
   Node {
-    nodeLabel :: String,
+    nodeLabel :: String,  -- TODO rename "nodeName"
     nodeLeft  :: String,
     nodeRight :: String
   }
   deriving (Show)
+
 
 main :: IO ()
 main = do
   puzzleInput <- getContents
   print $ solvePuzzle $ parsePuzzleInput puzzleInput
 
-parsePuzzleInput :: String -> PouchDeMaps
-parsePuzzleInput puzzleInput = pouchDeMaps
+parsePuzzleInput :: String -> PouchOfMaps
+parsePuzzleInput puzzleInput = pouchOfMaps
   where
-  pouchDeMaps  = PouchDeMaps instructions nodes
+  pouchOfMaps  = PouchOfMaps instructions nodes
   instructions = parseInstrs puzzleInput
   nodes        = parseNodes puzzleInput
 
@@ -46,33 +51,63 @@ parseInstr _   = error "parseInstr: wtf"
 parseNodes :: String -> [Node]
 parseNodes puzzleInput = nodes
   where
-  nodes        = map parseNode linesDeNodes
-  linesDeNodes = drop 2 $ lines puzzleInput
+  nodes        = map parseNode linesOfNodes
+  linesOfNodes = drop 2 $ lines puzzleInput
 
 parseNode :: String -> Node
-parseNode lineDeNode = node
+parseNode lineOfNode = node
   where
   node         = Node theNodeLabel theNodeLeft theNodeRight
-  theNodeLabel = parseNodeLabel lineDeNode
-  theNodeLeft  = parseNodeLeft lineDeNode
-  theNodeRight = parseNodeRight lineDeNode
+  theNodeLabel = parseNodeLabel lineOfNode
+  theNodeLeft  = parseNodeLeft lineOfNode
+  theNodeRight = parseNodeRight lineOfNode
 
 parseNodeLabel :: String -> String
-parseNodeLabel lineDeNode = theNodeLabel
+parseNodeLabel lineOfNode = theNodeLabel
   where
-  theNodeLabel = head $ words lineDeNode
+  theNodeLabel = head $ words lineOfNode
 
 parseNodeLeft :: String -> String
-parseNodeLeft lineDeNode = theNodeLeft
+parseNodeLeft lineOfNode = theNodeLeft
   where
-  theNodeLeftWithCruft = words lineDeNode !! 2
+  theNodeLeftWithCruft = words lineOfNode !! 2
   theNodeLeft          = init $ drop 1 theNodeLeftWithCruft
 
 parseNodeRight :: String -> String
-parseNodeRight lineDeNode = theNodeRight
+parseNodeRight lineOfNode = theNodeRight
   where
-  theNodeRightWithCruft = last $ words lineDeNode
+  theNodeRightWithCruft = last $ words lineOfNode
   theNodeRight          = init theNodeRightWithCruft
 
-solvePuzzle :: PouchDeMaps -> Integer
-solvePuzzle pouchDeMaps = 0  -- TODO
+solvePuzzle :: PouchOfMaps -> Integer
+solvePuzzle pouchOfMaps = countOfSteps
+  where
+  pathToEnd    = foldl (stepPath nodes) ["AAA"] instrs
+  instrs       = pouchOfMapsInstrs pouchOfMaps
+  nodes        = pouchOfMapsNodes pouchOfMaps
+  countOfSteps = trace (show pathToEnd) 0  -- TODO length
+
+stepPath :: [Node] -> [String] -> Instr -> [String]
+stepPath nodes pathOld instr = pathAppended
+  where
+  labelCurrent = last pathOld
+  labelNext    = calcNextLabel nodes labelCurrent instr
+  pathAppended = pathOld ++ [labelNext]
+
+calcNextLabel :: [Node] -> String -> Instr -> String
+calcNextLabel nodes labelCurrent instr
+  | instr == InstrLeft  = labelLeft
+  | instr == InstrRight = labelRight
+  where
+  labelLeft   = nodeLeft nodeCurrent
+  labelRight  = nodeRight nodeCurrent
+  nodeCurrent = findNode nodes labelCurrent
+
+findNode :: [Node] -> String -> Node
+findNode nodes label = node
+  where
+  node = head $ filter (isNodeNamed label) nodes
+
+isNodeNamed :: String -> Node -> Bool
+isNodeNamed name node =
+  nodeLabel node == name
