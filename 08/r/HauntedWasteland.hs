@@ -82,17 +82,17 @@ parseNodeRight lineOfNode = theNodeRight
 solvePuzzle :: PouchOfMaps -> Integer
 solvePuzzle pouchOfMaps = countOfSteps
   where
-  pathToEnd    = foldl (stepPath nodes) ["AAA"] instrs
-  instrs       = pouchOfMapsInstrs pouchOfMaps
-  nodes        = pouchOfMapsNodes pouchOfMaps
-  countOfSteps = trace (show pathToEnd) 0  -- TODO length
+  pathUntilEnd   = takeWhile (/= "ZZZ") pathInfinite
+  pathInfinite   = scanl (stepPath nodes) "AAA" instrsInfinite
+  instrsInfinite = cycle instrsFinite
+  instrsFinite   = pouchOfMapsInstrs pouchOfMaps
+  nodes          = pouchOfMapsNodes pouchOfMaps
+  countOfSteps   = trace (show pathUntilEnd) toInteger $ length pathUntilEnd
 
-stepPath :: [Node] -> [String] -> Instr -> [String]
-stepPath nodes pathOld instr = pathAppended
+stepPath :: [Node] -> String -> Instr -> String
+stepPath nodes labelCurrent instr = trace ("stepPath: " ++ labelCurrent) labelNext
   where
-  labelCurrent = last pathOld
-  labelNext    = calcNextLabel nodes labelCurrent instr
-  pathAppended = pathOld ++ [labelNext]
+  labelNext = calcNextLabel nodes labelCurrent instr
 
 calcNextLabel :: [Node] -> String -> Instr -> String
 calcNextLabel nodes labelCurrent instr
