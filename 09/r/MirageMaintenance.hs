@@ -41,12 +41,19 @@ parseLine line = history
   values  = map read $ words line
 
 solvePuzzle :: Report -> Integer
-solvePuzzle report = trace (show extrapolated0) 0
+solvePuzzle report = solution
   where
-  seq0          = historyValues $ head $ reportHistories report
-  diffSeqs0     = generateDiffSequences [seq0]
-  extrapolated0 = extrapolate diffSeqs0
+  seqsOfPredictions = map (predict . historyValues) $ reportHistories report
+  valsOfPredictions = map last seqsOfPredictions
+  solution          = sum valsOfPredictions
   -- TODO all lines
+
+predict :: [Integer] -> [Integer]
+predict seqIn = seqOut
+  where
+  seqsOfDiff         = generateDiffSequences [seqIn]
+  seqsOfExtrapolated = extrapolateSeqs seqsOfDiff
+  seqOut             = head seqsOfExtrapolated
 
 generateDiffSequences :: [[Integer]] -> [[Integer]]
 generateDiffSequences seqsOld
@@ -70,7 +77,21 @@ calcDiffs valsIn = diffs
   steps = zip valsIn $ tail valsIn
   diffs = map (\(a, b) -> b - a) steps
 
-extrapolate :: [[Integer]] -> [[Integer]]
-extrapolate seqsOld = seqsNew
+extrapolateSeqs :: [[Integer]] -> [[Integer]]
+extrapolateSeqs seqsOld = seqsExtrapolated
   where
-  seqsNew = seqsOld  -- TODO
+  seqsExtrapolated = foldr extrapolateSeq [] seqsOld
+
+extrapolateSeq :: [Integer] -> [[Integer]] -> [[Integer]]
+extrapolateSeq seqIn [] = appendZero [seqIn]
+extrapolateSeq seqIn seqsAcc = seqsExtrapolated
+  where
+  seqsExtrapolated = seqExtrapolated : seqsAcc
+  seqExtrapolated  = seqIn ++ [valNew]
+  valNew           = last seqIn + (last $ head seqsAcc)
+
+appendZero :: [[Integer]] -> [[Integer]]
+appendZero seqsOld = seqsAppended
+  where
+  seqsAppended = init seqsOld ++ [seqAppended]
+  seqAppended  = last seqsOld ++ [0]
