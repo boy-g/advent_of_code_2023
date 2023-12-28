@@ -1,0 +1,11 @@
+cabal-version: 2.4
+name:          PipeMaze
+version:       0.1.0.0
+
+executable PipeMaze
+    -- TODO Liquid Haskell
+    -- TODO "-Wall"
+    main-is:          PipeMaze.hs
+    build-depends:    base ^>=4.15.1.0
+    hs-source-dirs:   .
+    default-language: Haskell2010

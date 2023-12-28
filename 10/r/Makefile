@@ -1,3 +1,3 @@
 run:
-	ghc -Wall PipeMaze.hs
-	cat ./example1 | ./PipeMaze
+	cabal build
+	cat ./example1 | cabal run
