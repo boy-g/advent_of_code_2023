@@ -32,7 +32,8 @@ parsePuzzleInput puzzleInput = sketch
   linesOfPipes = lines puzzleInput
 
 solvePuzzle :: SketchOfPipes -> Integer
-solvePuzzle sketch = trace ("solvePuzzle: " ++ show pathOfLoop) lengthHalf
+--solvePuzzle sketch = trace ("solvePuzzle: " ++ show pathOfLoop) lengthHalf
+solvePuzzle sketch = lengthHalf
   where
   coordOfStart  = getStart sketch
   pathOfInitial = [coordOfStart]
@@ -81,14 +82,15 @@ extendPath sketch pathOld
   (c0, c1) = getConnecteds sketch $ last pathOld
 
 getConnecteds :: SketchOfPipes -> Coord -> (Coord, Coord)
-getConnecteds sketch coordOld = trace ("getConnecteds: " ++ show coordOld ++ " " ++ show coordsConnected) coordsPair
+--getConnecteds sketch coordOld = trace ("getConnecteds: " ++ show coordOld ++ " " ++ show coordsConnected) coordsPair
+getConnecteds sketch coordOld = coordsPair
   where
-  coordsNeighbors = getNeighbors coordOld
+  coordsNeighbors = getNeighbors sketch coordOld
   coordsConnected = filter (isAligned sketch coordOld) coordsNeighbors
   coordsPair      = (head coordsConnected, last coordsConnected)
 
-getNeighbors :: Coord -> [Coord]
-getNeighbors coord = coordsNeighbors
+getNeighbors :: SketchOfPipes -> Coord -> [Coord]
+getNeighbors sketch coord = coordsNeighbors
   where
   Coord x y       = coord
   coordsAll       = [
@@ -97,31 +99,37 @@ getNeighbors coord = coordsNeighbors
     Coord x (y + 1),
     Coord x (y - 1)
     ]
-  -- TODO check/filter within bounds?
-  coordsNeighbors = coordsAll
+  coordsNeighbors = filter (isWithinBounds sketch) coordsAll
 
 isAligned :: SketchOfPipes -> Coord -> Coord -> Bool
 isAligned sketch coordOrig coordOther
   | (positionOther == DirRight) =
-    trace ("isAligned: Right " ++ show coordOrig ++ " " ++ show coordOther)
+    --trace ("isAligned: Right " ++ show coordOrig ++ " " ++ show coordOther)
     elem DirRight directionsOrig  &&
     elem DirLeft directionsOther
   | (positionOther == DirDown) =
-    trace ("isAligned: Down " ++ show coordOrig ++ " " ++ show coordOther)
+    --trace ("isAligned: Down " ++ show coordOrig ++ " " ++ show coordOther)
     elem DirDown directionsOrig  &&
     elem DirUp directionsOther
   | (positionOther == DirLeft) =
-    trace ("isAligned: Left " ++ show coordOrig ++ " " ++ show coordOther)
+    --trace ("isAligned: Left " ++ show coordOrig ++ " " ++ show coordOther)
     elem DirLeft directionsOrig  &&
     elem DirRight directionsOther
   | (positionOther == DirUp) =
-    trace ("isAligned: Up " ++ show coordOrig ++ " " ++ show coordOther)
+    --trace ("isAligned: Up " ++ show coordOrig ++ " " ++ show coordOther)
     elem DirUp directionsOrig  &&
     elem DirDown directionsOther
   where
   positionOther   = getPositionRelative coordOrig coordOther
   directionsOrig  = getDirectionsOfConnections sketch coordOrig
   directionsOther = getDirectionsOfConnections sketch coordOther
+
+isWithinBounds :: SketchOfPipes -> Coord -> Bool
+isWithinBounds sketch coord = isWithin
+  where
+  Coord x y = coord
+  (w, h)    = getWidthHeight sketch
+  isWithin  = (0 <= x) && (x < w) && (0 <= y) && (y < h)
 
 getPositionRelative :: Coord -> Coord -> Direction
 getPositionRelative coordOrig coordOther
