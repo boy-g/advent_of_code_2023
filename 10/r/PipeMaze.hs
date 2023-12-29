@@ -13,7 +13,11 @@ data Coord =
     coordX :: Integer,
     coordY :: Integer
   }
-  deriving (Show)
+  deriving (Show, Eq)
+
+data Direction =
+  DirUp | DirDown | DirLeft | DirRight
+  deriving (Eq)
 
 
 main :: IO ()
@@ -28,11 +32,12 @@ parsePuzzleInput puzzleInput = sketch
   linesOfPipes = lines puzzleInput
 
 solvePuzzle :: SketchOfPipes -> Integer
-solvePuzzle sketch = trace (show pathOfSecond) 0  -- TODO
+solvePuzzle sketch = trace ("solvePuzzle: " ++ show pathOfLoop) lengthHalf
   where
   coordOfStart  = getStart sketch
   pathOfInitial = [coordOfStart]
-  pathOfSecond  = extendPath sketch pathOfInitial
+  pathOfLoop    = extendPath sketch pathOfInitial
+  lengthHalf    = toInteger $ div (length pathOfLoop) 2
 
 getStart :: SketchOfPipes -> Coord
 getStart sketch = start
@@ -54,21 +59,29 @@ getWidthHeight sketch = (width, height)
 isStart :: SketchOfPipes -> Coord -> Bool
 isStart sketch coord = is
   where
-  Coord x y           = coord
-  SketchOfPipes tiles = sketch
-  tile = genericIndex (genericIndex tiles y) x
+  tile = getTileAt sketch coord
   is   = tile == 'S'
 
-extendPath :: SketchOfPipes -> [Coord] -> [Coord]
-extendPath sketch pathOld = trace (show coordsConnected) pathNew
+getTileAt :: SketchOfPipes -> Coord -> Char
+getTileAt sketch coord = tile
   where
-  coordOld        = last pathOld
-  coordsConnected = getConnecteds sketch coordOld
-  coordNew        = Coord 0 0  -- TODO
-  pathNew         = pathOld ++ [coordNew]  -- TODO
+  Coord x y           = coord
+  SketchOfPipes tiles = sketch
+  tile                = genericIndex (genericIndex tiles y) x
+
+extendPath :: SketchOfPipes -> [Coord] -> [Coord]
+extendPath sketch pathOld
+  | (not $ elem c0 pathOld) =
+    extendPath sketch $ pathOld ++ [c0]
+  | (not $ elem c1 pathOld) =
+    extendPath sketch $ pathOld ++ [c1]
+  | (otherwise) =
+    pathOld
+  where
+  (c0, c1) = getConnecteds sketch $ last pathOld
 
 getConnecteds :: SketchOfPipes -> Coord -> (Coord, Coord)
-getConnecteds sketch coordOld = coordsPair
+getConnecteds sketch coordOld = trace ("getConnecteds: " ++ show coordOld ++ " " ++ show coordsConnected) coordsPair
   where
   coordsNeighbors = getNeighbors coordOld
   coordsConnected = filter (isAligned sketch coordOld) coordsNeighbors
@@ -77,9 +90,70 @@ getConnecteds sketch coordOld = coordsPair
 getNeighbors :: Coord -> [Coord]
 getNeighbors coord = coordsNeighbors
   where
-  coordsNeighbors = []  -- TODO
+  Coord x y       = coord
+  coordsAll       = [
+    Coord (x + 1) y,
+    Coord (x - 1) y,
+    Coord x (y + 1),
+    Coord x (y - 1)
+    ]
+  -- TODO check/filter within bounds?
+  coordsNeighbors = coordsAll
 
 isAligned :: SketchOfPipes -> Coord -> Coord -> Bool
-isAligned sketch coordOrig coordOther = is
+isAligned sketch coordOrig coordOther
+  | (positionOther == DirRight) =
+    trace ("isAligned: Right " ++ show coordOrig ++ " " ++ show coordOther)
+    elem DirRight directionsOrig  &&
+    elem DirLeft directionsOther
+  | (positionOther == DirDown) =
+    trace ("isAligned: Down " ++ show coordOrig ++ " " ++ show coordOther)
+    elem DirDown directionsOrig  &&
+    elem DirUp directionsOther
+  | (positionOther == DirLeft) =
+    trace ("isAligned: Left " ++ show coordOrig ++ " " ++ show coordOther)
+    elem DirLeft directionsOrig  &&
+    elem DirRight directionsOther
+  | (positionOther == DirUp) =
+    trace ("isAligned: Up " ++ show coordOrig ++ " " ++ show coordOther)
+    elem DirUp directionsOrig  &&
+    elem DirDown directionsOther
   where
-  is = True  -- TODO
+  positionOther   = getPositionRelative coordOrig coordOther
+  directionsOrig  = getDirectionsOfConnections sketch coordOrig
+  directionsOther = getDirectionsOfConnections sketch coordOther
+
+getPositionRelative :: Coord -> Coord -> Direction
+getPositionRelative coordOrig coordOther
+  | (xOrig < xOther) =
+    DirRight
+  | (xOther < xOrig) =
+    DirLeft
+  | (yOrig < yOther) =
+    DirDown
+  | (yOther < yOrig) =
+    DirUp
+  where
+  Coord xOrig  yOrig  = coordOrig
+  Coord xOther yOther = coordOther
+
+getDirectionsOfConnections :: SketchOfPipes -> Coord -> [Direction]
+getDirectionsOfConnections sketch coord
+  | (tile == '|') =
+    [DirUp,   DirDown]
+  | (tile == '-') =
+    [DirLeft, DirRight]
+  | (tile == 'L') =
+    [DirUp,   DirRight]
+  | (tile == 'J') =
+    [DirUp,   DirLeft]
+  | (tile == '7') =
+    [DirDown, DirLeft]
+  | (tile == 'F') =
+    [DirDown, DirRight]
+  | (tile == '.') =
+    []
+  | (tile == 'S') =
+    [DirUp, DirDown, DirLeft, DirRight]
+  where
+    tile = getTileAt sketch coord
